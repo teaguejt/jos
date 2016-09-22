@@ -10,6 +10,8 @@ void sys_set_cursorx( int );
 void sys_set_cursory( int );
 int sys_get_cursorx();
 int sys_get_cursory();
+int *sys_get_cursorx_addr();
+int *sys_get_cursory_addr();
 /*void ksetcursor( int, int );
 int *kgetcursor();*/
 

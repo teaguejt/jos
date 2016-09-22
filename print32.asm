@@ -1,11 +1,18 @@
 [bits 32]
 
-VMEM equ 0xb81E0
+VMEM equ 0xb8000
 WTBB equ 0x0f
 
 prints32:
     pusha
-    mov edx, VMEM
+    xor edx, edx
+    xor ecx, ecx
+    mov dl, [cursory]
+    mov cl, [cursorx]
+    imul dx, 0xA0
+    imul cx, 0x02
+    add dx, cx
+    add edx, VMEM
 
 prints32_loop:
     mov al, [ebx]

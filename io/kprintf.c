@@ -122,7 +122,8 @@ void kputc( int xpos, int ypos, char c ) {
     switch( c ) {
         default:
             *addr++ = c;
-            *addr++ = _attr;
+            /* *addr++ = _attr; */
+            *addr++ = 0x0F;
     }
 }
 

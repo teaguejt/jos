@@ -18,5 +18,6 @@ prot_init:
     mov gs, ax
     mov ebp, 0x90000
     mov esp, ebp
-
+    mov ebx, success
+    call prints32
     call PROT_BEGIN

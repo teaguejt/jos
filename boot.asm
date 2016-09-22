@@ -16,6 +16,7 @@ call load_jos
 mov si, preswitch
 call print_str
 call prot_switch
+
 hang:
     jmp hang
 
@@ -30,7 +31,7 @@ load_loop:
     mov dx, 0
     mov ch, 0
     mov cl, 2
-    mov al, 0x08
+    mov al, 0x0F
     mov ah, 0x02
     int 0x13
     jnc load_exit

@@ -32,3 +32,11 @@ int sys_get_cursorx() {
 int sys_get_cursory() {
     return _cursory;
 }
+
+int *sys_get_cursorx_addr() {
+    return &_cursorx;
+}
+
+int *sys_get_cursory_addr() {
+    return &_cursory;
+}
