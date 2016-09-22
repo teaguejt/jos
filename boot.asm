@@ -101,7 +101,7 @@ PROT_BEGIN:
 %include 'print32.asm'
 
 error db " Failed", 0
-success db " Bueno", 0
+success db " Good", 0
 welcome db "jOS v0.1 alpha s1 BL", 0
 loading db "Loading BL2/kernel from disk...", 0
 preswitch db "About to switch to protected mode...", 0
