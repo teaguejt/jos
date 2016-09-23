@@ -4,6 +4,9 @@
 #define VMEM (0xB8000)
 #define VMEM_MAX (0xB8F9E)
 #define VMEM_END (0xB8F9A)
+#define VMEM_LINE_SIZE (0xA0)
+#define VMEM_MAX_LINE (24)
+#define VMEM_LAST_LINE (0xB8F00)
 
 void sys_clear_screen();
 void sys_set_cursorx( int );
@@ -12,6 +15,8 @@ int sys_get_cursorx();
 int sys_get_cursory();
 int *sys_get_cursorx_addr();
 int *sys_get_cursory_addr();
+void sys_scroll_term();
+int sys_cursor_overflow(int);
 /*void ksetcursor( int, int );
 int *kgetcursor();*/
 

@@ -2,6 +2,7 @@
 
 static int _cursorx = 0;
 static int _cursory = 5;
+static int _cursory_max = 23;
 
 void sys_clear_screen() {    
     char *vmem = (char *)VMEM;
@@ -39,4 +40,15 @@ int *sys_get_cursorx_addr() {
 
 int *sys_get_cursory_addr() {
     return &_cursory;
+}
+
+void sys_scroll_term() {
+    char *pos;
+    for(pos = (char *)VMEM + VMEM_LINE_SIZE; pos < (char *)VMEM_LAST_LINE; ++pos) {
+        *(pos - VMEM_LINE_SIZE) = *pos;
+    }
+}
+
+int sys_cursor_overflow(int y) {
+    return y == _cursory_max;
 }

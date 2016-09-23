@@ -1,11 +1,17 @@
 ORG 0x7C00
 
+; Setup segments
 mov ax, cs
 mov ds, ax
 mov es, ax
 mov ss, ax
+
+; Since we're using "call" here, we need to have a (small) stack
 mov sp, 0x9C00
 
+; Do it all. Clear the screen, print some stuff, load the rest of jOS from
+; disk, switch to protected mode, relocate the kernel to 1 MiB, and jump to
+; its first instruction. Not bad considering we're limited to 512 bytes ;-)
 call clear_scr
 mov si, welcome
 call print_str
@@ -96,12 +102,15 @@ clear_scr_out:
 [bits 32]
 PROT_BEGIN:
     ; Relocate the kernel to the one-meg mark
-    mov esi, 0x80000
-    mov edi, 0x100000
-    mov ecx, 0x2000
+    mov esi, 0x80000    ; FROM where we loaded from floppy
+    mov edi, 0x100000   ; TO 1MiB
+    mov ecx, 0x1000     ; 4k words (two pages, but paging is off)
     rep movsw
     jmp 0x100000
 stop:
+    mov si, error
+    call print_nl
+    call print_str
     jmp stop
  
 [bits 16]

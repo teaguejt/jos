@@ -40,7 +40,12 @@ void kcprintf( const char attr, const char *str, ... ) {
         switch( str[i] ) {
             case '\n':
                 xpos = 0;
-                ++ypos;
+                if(sys_cursor_overflow(ypos)) {
+                    sys_scroll_term();
+                }
+                else {
+                    ++ypos;
+                }
                 break;
             case '%':
                 ++i;
@@ -88,7 +93,10 @@ void kprintf( const char *str, ... ) {
         switch( str[i] ) {
             case '\n':
                 xpos = 0;
-                ++ypos;
+                if(sys_cursor_overflow(ypos))
+                    sys_scroll_term();
+                else
+                    ++ypos;
                 break;
             case '%':
                 ++i;

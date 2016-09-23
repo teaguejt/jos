@@ -3,10 +3,15 @@
 
 const char *welcome = "Hello from C code!";
 
-void dummy() {
+void __asm_test(void);
+
+void dummy(int x, int y, int z) {
+    kprintf("stack test: %d %d %d\n", x, y, z);
 }
 
 void kmain() {
+    int i;
+    char * c;
     kcprintf( 0xF4, welcome );
     kcprintf( 0x0F, "\nNEW LINE TEST\n" );
     kprintf( "%d Zero int test\n", 0 );
@@ -20,5 +25,12 @@ void kmain() {
     kprintf("testing printing func retvals and var addresses:\n");
     kprintf("cursor: %d, %d\n", sys_get_cursorx(), sys_get_cursory());
     kprintf("cursor: %x, %x\n", sys_get_cursorx_addr(), sys_get_cursory_addr());
+    dummy(1, 2, 3);
+    for(i = 0; i < 10; ++i)
+        kprintf("Scrolling test! %d\n", i);
+    c = (char *)VMEM_LAST_LINE;
+    *c++ = 'J';
+    *c++ = 0xF;
+    __asm_test();
     while(1) ;
 }
