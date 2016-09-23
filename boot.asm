@@ -93,9 +93,18 @@ clear_scr_loop:
 clear_scr_out:
     ret
 
+[bits 32]
 PROT_BEGIN:
-    jmp 0x80000
+    ; Relocate the kernel to the one-meg mark
+    mov esi, 0x80000
+    mov edi, 0x100000
+    mov ecx, 0x2000
+    rep movsw
+    jmp 0x100000
+stop:
+    jmp stop
  
+[bits 16]
 %include 'gdt_dummy.asm'
 %include 'switch32.asm'
 %include 'print32.asm'

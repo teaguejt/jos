@@ -14,11 +14,14 @@ CFLAGS = -nostdlib -nostdinc -fno-builtin -fno-stack-protector -nostartfiles \
 
 all: run
 
-kernel.bin: boot2.o ${OBJ}
+kernel.bin: boot2.o ${OBJ} ${ASM_ELF}
 	i386-elf-ld -T link.ld -o $@ $^ --oformat binary
 
 %.o: %.c ${HEADERS}
 	${CC} ${CFLAGS} -ffreestanding -c $< -o $@
+
+%.elf: ${ASSEMBLY}
+	nasm $< -f elf -o $@	
 
 boot2.o: boot2.asm
 	nasm $< -f elf -o $@
@@ -37,7 +40,7 @@ debug: jos.bin kernel.elf
 	i386-elf-gdb -ex "target remote localhost:1234" -ex "symbol-file kernel.elf"
 
 kernel.elf: boot2.o ${OBJ}
-	i386-elf-ld -o $@  $^ -Ttext 0x80000
+	i386-elf-ld -o $@  $^ -Ttext 0x100000
 
 clean:
 	rm *.bin *.o *.elf

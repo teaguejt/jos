@@ -1,6 +1,6 @@
 OUTPUT_FORMAT("binary")
 ENTRY(kmain)
-phys = 0x80000;
+phys = 0x100000;
 SECTIONS
 {
     .text phys : AT(phys) {
