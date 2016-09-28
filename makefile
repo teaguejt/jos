@@ -20,7 +20,7 @@ kernel.bin: boot2.o ${OBJ} ${ASM_ELF}
 %.o: %.c ${HEADERS}
 	${CC} ${CFLAGS} -ffreestanding -c $< -o $@
 
-%.elf: ${ASSEMBLY}
+%.elf: %.asm ${ASSEMBLY}
 	nasm $< -f elf -o $@	
 
 boot2.o: boot2.asm
@@ -43,4 +43,4 @@ kernel.elf: boot2.o ${OBJ}
 	i386-elf-ld -o $@  $^ -Ttext 0x100000
 
 clean:
-	rm *.bin *.o *.elf
+	rm *.bin ${OBJ} ${ASM_ELF}

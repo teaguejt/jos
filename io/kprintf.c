@@ -47,6 +47,9 @@ void kcprintf( const char attr, const char *str, ... ) {
                     ++ypos;
                 }
                 break;
+            case '\t':
+                xpos += 5;
+                break;
             case '%':
                 ++i;
                 switch( str[i] ) {

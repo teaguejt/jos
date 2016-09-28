@@ -47,6 +47,9 @@ void sys_scroll_term() {
     for(pos = (char *)VMEM + VMEM_LINE_SIZE; pos < (char *)VMEM_LAST_LINE; ++pos) {
         *(pos - VMEM_LINE_SIZE) = *pos;
     }
+    for(pos = (char *)VMEM_LAST_LINE - VMEM_LINE_SIZE; pos < (char *)VMEM_LAST_LINE; ++pos) {
+        *(pos) = 0;
+    }
 }
 
 int sys_cursor_overflow(int y) {
