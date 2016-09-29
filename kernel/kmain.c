@@ -15,13 +15,14 @@ void dummy(int x, int y, int z) {
 
 void kmain() {
     int i;
-    char * c;
+    /*char * c;*/
+    unsigned short pos = 0;
     uint16_t *bda_tmp;
     uint32_t tmp;
     struct bda_info bda_info;
     struct registers registers;
 
-    kcprintf( 0xF4, welcome );
+    /*kcprintf( 0xF4, welcome );
     kcprintf( 0x0F, "\nNEW LINE TEST\n" );
     kprintf( "%d Zero int test\n", 0 );
     kprintf( "%d Non-zero int test\n", 5 );
@@ -37,8 +38,10 @@ void kmain() {
     dummy(1, 2, 3);
     c = (char *)VMEM_LAST_LINE;
     *c++ = 'J';
-    *c++ = 0xF;
-    
+    *c++ = 0xF;*/
+   
+    kprintf("jOS System Summary from BDA:\n");
+    kprintf("============================\n");
     /* Read the BIOS data area */
     bda_tmp = (uint16_t *)__INIT_BDA;
     for(i = 0; i < 4; i++) {
@@ -59,5 +62,9 @@ void kmain() {
     kprintf("ecx: 0x%x     ", registers.ecx);
     kprintf("edx: 0x%x\n", registers.edx);
     kprintf("esp: 0x%x\n", registers.esp);
+    __asm_outb(0x3D4, 0x0F);
+    __asm_outb(0x3D5, (unsigned char)(pos & 0xFF));
+    __asm_outb(0x3D4, 0x0E);
+    __asm_outb(0x3D5, (unsigned char)((pos >> 8) & 0xFF));
     while(1) ;
 }

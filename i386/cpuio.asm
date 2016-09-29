@@ -9,8 +9,13 @@ __asm_outb:
     push ebp
     mov ebp, esp
     push eax
-    push ebx
-    pop ebx
+    push edx
+    xor eax, eax
+    xor edx, edx
+    mov dx, [ebp + 8]
+    mov al, [ebp + 12]
+    out dx, al
+    pop edx
     pop eax
     pop ebp
     ret
@@ -20,6 +25,7 @@ __asm_outw:
     mov ebp, esp
     push eax
     push ebx
+    mov bx, [ebp + 4]
     pop ebx
     pop eax
     pop ebp

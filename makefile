@@ -33,7 +33,7 @@ jos.bin: boot1.bin kernel.bin
 	cat $^ > jos.bin
 
 run: jos.bin
-	qemu-system-i386 -fda jos.bin -monitor stdio
+	qemu-system-x86_64 -fda jos.bin -monitor stdio
 
 debug: jos.bin kernel.elf
 	qemu-system-i386 -s -fda jos.bin &
