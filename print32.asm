@@ -1,7 +1,7 @@
 [bits 32]
 
 VMEM equ 0xb8000
-WTBB equ 0x0f
+WTBB equ 0x07
 
 prints32:
     pusha

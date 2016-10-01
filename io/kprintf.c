@@ -4,7 +4,7 @@
 #include "../stdlib/stdarg.h"
 #include "../stdlib/stdbool.h"
 
-#define WTBB  0x0F         /* White text, black bg */
+#define WTBB  0x07         /* White text, black bg */
 #define RTWB  0xF4         /* Red text, white bg */
 
 #define VMTRANSLATE( row, col ) ( VMEM * 2 * 80 * row + col )
@@ -82,7 +82,8 @@ void kcprintf( const char attr, const char *str, ... ) {
 void kprintf( const char *str, ... ) {
     int xpos;
     int ypos;
-    int len, i;
+    int len, i, j;
+    char *tmp;
 
     va_list args;
     va_start( args, str );
@@ -113,6 +114,14 @@ void kprintf( const char *str, ... ) {
                     case 'c':
                         kputc( xpos, ypos, va_arg( args, char ) );
                         ++xpos;
+                        break;
+                    case 's':
+                        tmp = va_arg(args, char *);
+                        j = 0;
+                        while(tmp[j] != '\0') {
+                            kputc(xpos++, ypos, tmp[j]);
+                            ++j;
+                        }
                         break;
                 }
                 break;

@@ -37,7 +37,7 @@ load_loop:
     mov dx, 0
     mov ch, 0
     mov cl, 2
-    mov al, 0x0F
+    mov al, 0x20
     mov ah, 0x02
     int 0x13
     jnc load_exit
@@ -65,7 +65,7 @@ print_str:
     imul bx, 0xA0
     imul ax, 0x02
     add bx, ax
-    mov ah, 0x0F
+    mov ah, 0x07
 print_str_loop:
     lodsb
     cmp al,0
@@ -90,10 +90,13 @@ clear_scr:
     mov bx, 0xB800
     mov es, bx
     mov al, 0x0
+    mov cl, 0x07
 clear_scr_loop:
     cmp bx, 0xFA0
     jz clear_scr_out
     mov [es:bx], al
+    add bx, 0x01
+    mov [es:bx], cl
     add bx, 0x01
     jmp clear_scr_loop
 clear_scr_out:
@@ -104,7 +107,7 @@ PROT_BEGIN:
     ; Relocate the kernel to the one-meg mark
     mov esi, 0x80000    ; FROM where we loaded from floppy
     mov edi, 0x100000   ; TO 1MiB
-    mov ecx, 0x1000     ; 4k words (two pages, but paging is off)
+    mov ecx, 0x1800     ; 4k words (two pages, but paging is off)
     rep movsw
     jmp 0x100000
 stop:

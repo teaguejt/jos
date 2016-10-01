@@ -1,7 +1,7 @@
 #include "kscreen.h"
 
 static int _cursorx = 0;
-static int _cursory = 5;
+static int _cursory = 0;
 static int _cursory_max = 23;
 
 void sys_clear_screen() {    
