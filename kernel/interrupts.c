@@ -55,6 +55,18 @@ void isr_install() {
     set_idt_gate(30, (uint32_t)isr30);
     set_idt_gate(31, (uint32_t)isr31);
 
+    // Remap the programmable interrupt controller
+    __asm_outb(0x20, 0x11);
+    __asm_outb(0xA0, 0x11);
+    __asm_outb(0x21, 0x20);
+    __asm_outb(0xA1, 0x28);
+    __asm_outb(0x21, 0x04);
+    __asm_outb(0xA1, 0x02);
+    __asm_outb(0x21, 0x01);
+    __asm_outb(0xA1, 0x01);
+    __asm_outb(0x21, 0x00);
+    __asm_outb(0xA1, 0x00);
+
     set_idt(); // Load with ASM
 }
 

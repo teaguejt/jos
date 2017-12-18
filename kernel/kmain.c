@@ -76,8 +76,7 @@ void kmain() {
     kprintf("Max cpuid eax value = 0x%x\n", cpu_info.max_capabilities);
     //kprintf("IDT array located at 0x%x\n", __get_idt());
     kprintf("CPU vendor: %s\n", cpu_info.vendor_string);
-    kprintf("CPU brand string: %s\n", cpu_info.brand_string);
-    kprintf("     at 0x%x\n", &cpu_info);
-    __asm__ __volatile__ ("int $3");
+    kprintf("CPU brand string: %s at 0x%x\n", cpu_info.brand_string, &cpu_info);
+    //__asm__ __volatile__ ("int $3");
     while(1) ;
 }

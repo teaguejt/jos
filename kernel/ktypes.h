@@ -9,4 +9,7 @@ typedef char int8_t;
 typedef short int16_t;
 typedef int int32_t;
 
+#define LOW_16(addr)  ((uint16_t)(addr & 0xFFFF))
+#define HIGH_16(addr) ((uint16_t)((addr >> 16) & 0xFFFF))
+
 #endif

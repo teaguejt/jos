@@ -1,6 +1,7 @@
 C_SOURCE = $(wildcard kernel/*.c screen/*.c io/*.c string/*.c)
 ASSEMBLY = $(wildcard i386/*.asm)
 HEADERS  = $(wildcard kernel/*.h screen/*.h io/*.h)
+INCLUDE  = ./include/
 OBJ      = ${C_SOURCE:.c=.o}
 ASM_ELF  = ${ASSEMBLY:.asm=.elf}
 ASM_OBJ  = ${ASSEMBLY:.asm=.o}
@@ -18,7 +19,7 @@ kernel.bin: boot2.o ${OBJ} ${ASM_ELF}
 	i386-elf-ld -T link.ld -o $@ $^ --oformat binary
 
 %.o: %.c ${HEADERS}
-	${CC} ${CFLAGS} -ffreestanding -c $< -o $@
+	${CC} ${CFLAGS} -I ${INCLUDE} -ffreestanding -c $< -o $@ -I
 
 %.elf: %.asm ${ASSEMBLY}
 	nasm $< -f elf -o $@	
