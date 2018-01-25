@@ -1,7 +1,7 @@
-C_SOURCE = $(wildcard kernel/*.c screen/*.c io/*.c string/*.c)
+C_SOURCE = $(wildcard kernel/*.c screen/*.c io/*.c string/*.c i386/*.c)
 ASSEMBLY = $(wildcard i386/*.asm)
 HEADERS  = $(wildcard kernel/*.h screen/*.h io/*.h)
-INCLUDE  = ./include/
+INCLUDE  = $(shell pwd)/include/
 OBJ      = ${C_SOURCE:.c=.o}
 ASM_ELF  = ${ASSEMBLY:.asm=.elf}
 ASM_OBJ  = ${ASSEMBLY:.asm=.o}
@@ -11,7 +11,7 @@ LD  = i386-elf-ld
 GDB = i386-elf-gdb
 
 CFLAGS = -nostdlib -nostdinc -fno-builtin -fno-stack-protector -nostartfiles \
-		 -nodefaultlibs -Wall -Wextra -Werror
+		 -nodefaultlibs -Wall -Wextra -isystem ${INCLUDE}
 
 all: run
 
@@ -19,7 +19,7 @@ kernel.bin: boot2.o ${OBJ} ${ASM_ELF}
 	i386-elf-ld -T link.ld -o $@ $^ --oformat binary
 
 %.o: %.c ${HEADERS}
-	${CC} ${CFLAGS} -I ${INCLUDE} -ffreestanding -c $< -o $@ -I
+	${CC} ${CFLAGS} -ffreestanding -c $< -o $@
 
 %.elf: %.asm ${ASSEMBLY}
 	nasm $< -f elf -o $@	

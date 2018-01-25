@@ -1,7 +1,7 @@
 #ifndef __JOS_CPU_H__
 #define __JOS_CPU_H__
 
-#include "ktypes.h"
+#include <ktypes.h>
 
 struct cpu_info {
     uint32_t max_capabilities;

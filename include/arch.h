@@ -1,14 +1,14 @@
 #ifndef __JOS_ARCH_H__
 #define __JOS_ARCH_H__
 
-#include "ktypes.h"
+#include <ktypes.h>
 
 struct registers {
-    uint32_t eax;
-    uint32_t ebx;
-    uint32_t ecx;
-    uint32_t edx;
-    uint32_t esp;
+    uint32_t ds;
+    uint32_t edi, esi, ebp, esp;
+    uint32_t ebx, edx, ecx, eax;
+    uint32_t interrupt, err;
+    uint32_t eip, cs, flags, uesp, ss;
 };
 
 void __asm_getreg(struct registers *);

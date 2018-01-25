@@ -1,5 +1,8 @@
 #include "interrupts.h"
 #include "../io/kprintf.h"
+#include <arch.h>
+
+isr_t isr_handlers[256];
 
 struct idt_entry *__get_idt() {
     return idt;
@@ -67,7 +70,25 @@ void isr_install() {
     __asm_outb(0x21, 0x00);
     __asm_outb(0xA1, 0x00);
 
+    set_idt_gate(32, (uint32_t)irq0);
+    set_idt_gate(33, (uint32_t)irq1);
+    set_idt_gate(34, (uint32_t)irq2);
+    set_idt_gate(35, (uint32_t)irq3);
+    set_idt_gate(36, (uint32_t)irq4);
+    set_idt_gate(37, (uint32_t)irq5);
+    set_idt_gate(38, (uint32_t)irq6);
+    set_idt_gate(39, (uint32_t)irq7);
+    set_idt_gate(40, (uint32_t)irq8);
+    set_idt_gate(41, (uint32_t)irq9);
+    set_idt_gate(42, (uint32_t)irq10);
+    set_idt_gate(43, (uint32_t)irq11);
+    set_idt_gate(44, (uint32_t)irq12);
+    set_idt_gate(45, (uint32_t)irq13);
+    set_idt_gate(46, (uint32_t)irq14);
+    set_idt_gate(47, (uint32_t)irq15);
+
     set_idt(); // Load with ASM
+    __asm__ __volatile__ ("sti");
 }
 
 /* To print the message which defines every exception */
@@ -109,7 +130,22 @@ char *exception_messages[] = {
     "Reserved"
 };
 
-void isr_handler(registers_t r) {
-    kprintf("received interrupt: %d\n", (int)r.int_no);
-    kprintf("%s\n", exception_messages[r.int_no]);
+void isr_handler(registers_t *r) {
+    kprintf("received interrupt: %d\n", (int)r->int_no);
+    kprintf("%s\n", exception_messages[r->int_no]);
+    kprintf("code: %d\n", (int)r->err_code);
+}
+
+void register_interrupt_handler(uint8_t n, isr_t handler) {
+    isr_handlers[n] = handler;
+}
+
+void irq_handler(registers_t *r) {
+    if(r->int_no >= 40) __asm_outb(0xA0, 0x20);
+    __asm_outb(0x20, 0x20);
+
+    if(isr_handlers[r->int_no] != 0) {
+        isr_t handler = isr_handlers[r->int_no];
+        handler(r);
+    }
 }

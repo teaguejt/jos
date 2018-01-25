@@ -1,3 +1,4 @@
+#include <timer.h>
 #include "initialize.h"
 #include "ktypes.h"
 #include "arch.h"
@@ -9,6 +10,9 @@
 
 const char *welcome = "Hello from C code!";
 static struct cpu_info cpu_info;
+
+/* Control variables */
+int shouldReact = 0;
 
 uint32_t __asm_test(uint32_t);
 
@@ -77,6 +81,10 @@ void kmain() {
     //kprintf("IDT array located at 0x%x\n", __get_idt());
     kprintf("CPU vendor: %s\n", cpu_info.vendor_string);
     kprintf("CPU brand string: %s at 0x%x\n", cpu_info.brand_string, &cpu_info);
-    //__asm__ __volatile__ ("int $3");
+    kprintf("location of isr3: 0x%x\n", isr3);
+    kprintf("location of timer_init: 0x%x\n", timer_init);
+    timer_init(1193);
+    __asm__ __volatile__ ("int $2");
+    __asm__ __volatile__ ("int $3");
     while(1) ;
 }
