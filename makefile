@@ -13,7 +13,7 @@ GDB = i386-elf-gdb
 CFLAGS = -nostdlib -nostdinc -fno-builtin -fno-stack-protector -nostartfiles \
 		 -nodefaultlibs -Wall -Wextra -isystem ${INCLUDE} -D i386
 
-all: run
+all: run_i386
 
 kernel.bin: boot3.o ${OBJ} ${ASM_ELF}
 	i386-elf-ld -T link.ld -o $@ $^ --oformat binary
@@ -30,7 +30,7 @@ boot3.o: boot3.asm
 boot2.bin: boot2.asm
 	nasm $< -f bin -o $@
 
-boot1.bin: boot.asm
+boot1.bin: boot1.asm
 	nasm $< -f bin -o $@
 
 jos.bin: boot1.bin boot2.bin kernel.bin
@@ -40,7 +40,7 @@ runbl: boot1.bin boot2.bin
 	cat $^ > jos.bin
 	qemu-system-x86_64 -fda jos.bin -monitor stdio
 
-run: jos.bin
+run_i386: jos.bin
 	qemu-system-x86_64 -fda jos.bin -monitor stdio
 
 debug: jos.bin kernel.elf

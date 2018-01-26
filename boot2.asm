@@ -12,11 +12,14 @@ call print_str
 call get_smap
 mov si, success
 call print_str
+call print_nl
 
 ; Reset segments and switch to protected mode
+mov si, protsw
+call print_str
 xor eax, eax
-mov eax, prot_switch_alt
-call prot_switch_alt
+mov eax, prot_switch
+call prot_switch
 
 ; Get the E820 map. Has to happen BEFORE the protected mode switch
 ; Yes, it uses extended registers from real mode. This is... weird
@@ -134,7 +137,7 @@ DATA_SEG equ gdt_data - gdt_start
 gdtr dw 0x0
      dd 0x0
 
-prot_switch_alt:
+prot_switch:
     mov eax, 0x0
     mov ds, ax
     cli
@@ -144,24 +147,51 @@ prot_switch_alt:
     mov cr0, eax
     jmp CODE_SEG:prot_init
 
-prot_switch:
-    xor eax, eax
-    mov ax, ds
-    ;shl eax, 0x4
-    add eax, gdt_start
-    mov [gdtr + 2], eax
-    mov eax, gdt_end
-    sub eax, gdt_start
-    sub eax, 1
-    mov [gdtr], ax
-    cli
-    lgdt [gdtr]
-    mov eax, cr0
-    or eax, 0x1
-    mov cr0, eax
-    jmp CODE_SEG:prot_init
-
 [bits 32]
+; Oh wow, I get to write this twice, too. Thank you
+; segmentation, followed by a lack thereof
+; Whatever. I have a whole 1k here. That's almost
+; I N F I N I T E S T O R A G E
+print_str32:
+    pusha
+    xor edx, edx
+    xor ecx, ecx
+    mov dl, [cursory]
+    mov cl, [cursorx]
+    push cx
+    imul dx, 0xA0
+    imul cx, 0x02
+    add dx, cx
+    add edx, 0xb8000
+    mov cl, 0x0
+print_str32_loop:
+    mov al, [ebx]
+    mov ah, 0x07
+    cmp al, 0
+    je print_str32_done
+    inc cl
+    mov [edx], ax
+    add ebx, 1
+    add edx, 2
+    jmp print_str32_loop
+print_str32_done:
+    pop ax
+    add al, cl
+    mov [cursorx], al
+    popa
+    ret
+
+print_nl32:
+    pusha
+    xor ax, ax
+    mov [cursorx], al
+    mov al, [cursory]
+    add al, 1
+    mov [cursory], al
+    popa
+    ret
+    
+
 prot_init:
     mov ax, DATA_SEG
     mov ds, ax
@@ -172,28 +202,58 @@ prot_init:
     mov ebp, 0x90000
     mov esp, ebp
     mov ebx, success
-    call prints32
-    call PROT_BEGIN
+    call print_str32
+
+; We can't exactly go back to the beginning here.
+; Execute this linearly to finalize.
+call print_nl32
+mov ebx, findpgs
+call print_str32
+call find_free_page
+
+
+; Start setting up paging. First, find a free page above
+; 0x10000 for the kernel pgd
+find_free_page:
+    pusha
+    mov ebx, 0x2400         ; starting addr of e820 map
+    mov eax, [ebx]          ; how many records to check
+find_free_page_loop:
+    cmp eax, 0x0
+    jz find_free_page_err
+    sub eax, 1
+    push eax
+    mov ebx, 0x2200
+    mov eax, [ebx]
+    mov ecx, [ebx + 20]
+    jmp $
+    popa
+    ret
+find_free_page_err:
+    mov ebx, error
+    call print_str32
+    jmp $
 
 PROT_BEGIN:
     mov esi, 0x8400
     mov edi, 0x100000
     mov ecx, 0x1800
-    mov eax, 0xDEADBEEF
     rep movsw
+    jmp $
     jmp 0x100000
 
 [bits 16]
-%include 'print32.asm'
-
 error db "Failed.", 0
 success db "Bueno.", 0
 getmm db "Getting memory map... ", 0
 protsw db "Switching to protected mode... ", 0
+findpgs db "Finding space for kernel pg. structs... ", 0
 
 cursorx db 0x0
 cursory db 0x0
 smaps_entries dw 0x0
 smaps_esize dw 0x0
+kernel_pgd dd 0x0
+kernel_pte dd 0x0
 
 times 1024 - ($ - $$) db 0
