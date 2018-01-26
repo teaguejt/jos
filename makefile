@@ -1,4 +1,4 @@
-C_SOURCE = $(wildcard kernel/*.c screen/*.c io/*.c string/*.c i386/*.c)
+C_SOURCE = $(wildcard kernel/*.c screen/*.c io/*.c string/*.c i386/*.c mm/*.c)
 ASSEMBLY = $(wildcard i386/*.asm)
 HEADERS  = $(wildcard kernel/*.h screen/*.h io/*.h)
 INCLUDE  = $(shell pwd)/include/
@@ -11,11 +11,11 @@ LD  = i386-elf-ld
 GDB = i386-elf-gdb
 
 CFLAGS = -nostdlib -nostdinc -fno-builtin -fno-stack-protector -nostartfiles \
-		 -nodefaultlibs -Wall -Wextra -isystem ${INCLUDE}
+		 -nodefaultlibs -Wall -Wextra -isystem ${INCLUDE} -D i386
 
 all: run
 
-kernel.bin: boot2.o ${OBJ} ${ASM_ELF}
+kernel.bin: boot3.o ${OBJ} ${ASM_ELF}
 	i386-elf-ld -T link.ld -o $@ $^ --oformat binary
 
 %.o: %.c ${HEADERS}
@@ -24,14 +24,21 @@ kernel.bin: boot2.o ${OBJ} ${ASM_ELF}
 %.elf: %.asm ${ASSEMBLY}
 	nasm $< -f elf -o $@	
 
-boot2.o: boot2.asm
-	nasm $< -f elf -o $@
+boot3.o: boot3.asm
+	nasm $< -f elf -o $@	
+
+boot2.bin: boot2.asm
+	nasm $< -f bin -o $@
 
 boot1.bin: boot.asm
 	nasm $< -f bin -o $@
 
-jos.bin: boot1.bin kernel.bin
+jos.bin: boot1.bin boot2.bin kernel.bin
 	cat $^ > jos.bin
+
+runbl: boot1.bin boot2.bin
+	cat $^ > jos.bin
+	qemu-system-x86_64 -fda jos.bin -monitor stdio
 
 run: jos.bin
 	qemu-system-x86_64 -fda jos.bin -monitor stdio

@@ -9,7 +9,7 @@ int get_ticks(void) {
 
 static void timer(registers_t t) {
     ++ticks;
-    kprintf("tick!\n");
+    //kprintf("tick!\n");
 }
 
 void timer_init(uint32_t frequency) {

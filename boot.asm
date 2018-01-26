@@ -7,7 +7,7 @@ mov es, ax
 mov ss, ax
 
 ; Since we're using "call" here, we need to have a (small) stack
-mov sp, 0x9C00
+mov sp, 0x7000
 
 ; Do it all. Clear the screen, print some stuff, load the rest of jOS from
 ; disk, switch to protected mode, relocate the kernel to 1 MiB, and jump to
@@ -21,7 +21,11 @@ call print_str
 call load_jos
 mov si, preswitch
 call print_str
-call prot_switch
+mov bx, [cursorx]
+mov cx, [cursory]
+jmp 0x8000
+mov si, error
+call print_str
 
 hang:
     jmp hang
@@ -31,9 +35,9 @@ load_jos:
 load_loop:
     xor ah, ah
     int 0x13
-    mov bx, 0x8000
+    mov bx, 0x0
     mov es, bx
-    xor bx, bx
+    mov bx, 0x8000
     mov dx, 0
     mov ch, 0
     mov cl, 2
@@ -102,30 +106,11 @@ clear_scr_loop:
 clear_scr_out:
     ret
 
-[bits 32]
-PROT_BEGIN:
-    ; Relocate the kernel to the one-meg mark
-    mov esi, 0x80000    ; FROM where we loaded from floppy
-    mov edi, 0x100000   ; TO 1MiB
-    mov ecx, 0x1800     ; 4k words (two pages, but paging is off)
-    rep movsw
-    jmp 0x100000
-stop:
-    mov si, error
-    call print_nl
-    call print_str
-    jmp stop
- 
-[bits 16]
-%include 'gdt_dummy.asm'
-%include 'switch32.asm'
-%include 'print32.asm'
-
 error db " Failed", 0
 success db " Bueno", 0
 welcome db "jOS v0.1 alpha s1 BL", 0
-loading db "Loading BL2/kernel from disk...", 0
-preswitch db "About to switch to protected mode...", 0
+loading db "Loading BL2/kernel from disk... ", 0
+preswitch db "Jumping to S2 Bootloader... ", 0
 postswitch db "Success.", 0
 attempt db 0x3
 cursorx db 0x0

@@ -15,6 +15,7 @@ static char _attr = WTBB;
 void kputc( int, int, char );
 int kprint_int( int, int, int );
 int kprint_hex( int, int, unsigned int );
+int kprint_long_hex(int, int, unsigned long);
 void kput_hexc( int, int, unsigned int );
 
 void kprinttest() {
@@ -27,6 +28,7 @@ void kprinttest() {
 void kcprintf( const char attr, const char *str, ... ) {
     int xpos, ypos, len, i;
     va_list args;
+    int is_long = 0;
 
     va_start( args, str );
     _attr = attr;
@@ -52,12 +54,22 @@ void kcprintf( const char attr, const char *str, ... ) {
                 break;
             case '%':
                 ++i;
+                if(str[i] == 'l') {
+                    is_long = 1;
+                    ++i;
+                }
+                else {
+                    is_long = 0;
+                }
                 switch( str[i] ) {
                     case 'd':
                         xpos += kprint_int( xpos, ypos, va_arg( args, int ) );
                         break;
                     case 'x':
-                        xpos += kprint_hex( xpos, ypos, va_arg( args, unsigned int ) );
+                        if(is_long)
+                            xpos += kprint_long_hex(xpos, ypos, va_arg(args, unsigned long));
+                        else
+                            xpos += kprint_hex( xpos, ypos, va_arg( args, unsigned int ) );
                         break;
                     case 'c':
                         kputc( xpos, ypos, va_arg( args, char ) );
@@ -84,6 +96,7 @@ void kprintf( const char *str, ... ) {
     int ypos;
     int len, i, j;
     char *tmp;
+    int is_long = 0;
 
     va_list args;
     va_start( args, str );
@@ -104,12 +117,22 @@ void kprintf( const char *str, ... ) {
                 break;
             case '%':
                 ++i;
+                if(str[i] == 'l') {
+                    is_long = 1;
+                    ++i;
+                }
+                else {
+                    is_long = 0;
+                }
                 switch( str[i] ) {
                     case 'd':
                         xpos += kprint_int( xpos, ypos, va_arg( args, int ) );
                         break;
                     case 'x':
-                        xpos += kprint_hex( xpos, ypos, va_arg( args, unsigned int ) );
+                        if(is_long)
+                            xpos += kprint_long_hex(xpos, ypos, va_arg(args, unsigned long));
+                        else
+                            xpos += kprint_hex( xpos, ypos, va_arg( args, unsigned int ) );
                         break;
                     case 'c':
                         kputc( xpos, ypos, va_arg( args, char ) );
@@ -182,6 +205,27 @@ int kprint_hex( int xpos, int ypos, unsigned int i ) {
         h = ( *(char *)x & 240 ) >> 4;
         kput_hexc( xpos, ypos, h );
         kput_hexc( xpos + 1, ypos, l );
+        xpos += 2;
+        len += 2;
+        --x;
+    }
+
+    return len;
+}
+
+int kprint_long_hex(int xpos, int ypos, unsigned long i) {
+    int len = 0;
+    unsigned int it;
+    char *x = (char *)&i;
+    char l;
+    char h;
+
+    x += sizeof(unsigned long) - 1;
+    for(it = 0; it < sizeof(unsigned long); it++) {
+        l = (*(char *)x & 15);
+        h = (*(char *)x & 240) >> 4;
+        kput_hexc(xpos, ypos, h);
+        kput_hexc(xpos + 1, ypos, l);
         xpos += 2;
         len += 2;
         --x;

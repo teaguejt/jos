@@ -6,6 +6,7 @@
 #include "interrupts.h"
 #include "../io/kprintf.h"
 #include "../screen/kscreen.h"
+#include <paging.h>
 
 
 const char *welcome = "Hello from C code!";
@@ -79,10 +80,13 @@ void kmain() {
     get_cpu_data(&cpu_info);
     kprintf("Max cpuid eax value = 0x%x\n", cpu_info.max_capabilities);
     //kprintf("IDT array located at 0x%x\n", __get_idt());
+    kprintf("int size = %d\n", sizeof(int));
     kprintf("CPU vendor: %s\n", cpu_info.vendor_string);
     kprintf("CPU brand string: %s at 0x%x\n", cpu_info.brand_string, &cpu_info);
     kprintf("location of isr3: 0x%x\n", isr3);
     kprintf("location of timer_init: 0x%x\n", timer_init);
+    kprintf("location of kernel pgd: 0x%lx\n", &k_pgd);
+    kprintf("size of pgd_struct: 0x%x\n", (int)sizeof(pgd_t));
     timer_init(1193);
     __asm__ __volatile__ ("int $2");
     __asm__ __volatile__ ("int $3");
