@@ -88,6 +88,7 @@ void kcprintf( const char attr, const char *str, ... ) {
     sys_set_cursorx( xpos );
     sys_set_cursory( ypos );
     _attr = WTBB;
+    sys_move_hw_cursor(xpos, ypos);
 }
 
 /* The main printf, that actually handles, you know, printing */
@@ -158,6 +159,7 @@ void kprintf( const char *str, ... ) {
     // Re-set the cursor position
     sys_set_cursorx( xpos );
     sys_set_cursory( ypos );
+    sys_move_hw_cursor(xpos, ypos);
 }
 
 void kputc( int xpos, int ypos, char c ) {

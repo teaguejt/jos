@@ -57,6 +57,21 @@ int sys_cursor_overflow(int y) {
     return y == _cursory_max;
 }
 
+void sys_init_hw_cursor() {
+    __asm_outb(0x3D4, 0x0A);
+    __asm_outb(0x3D5, (__asm_inb(0x3D5) & 0xC0) | 0xE);
+    __asm_outb(0x3D4, 0x0B);
+    __asm_outb(0x3D5, (__asm_inb(0x3E0) & 0xE0) | 0xF);
+}
+
+void sys_move_hw_cursor(uint16_t x, uint16_t y) {
+    uint16_t pos = y * 80 + x;
+    __asm_outb(0x3D4, 0x0F);
+    __asm_outb(0x3D5, (uint8_t)(pos & 0xFF));
+    __asm_outb(0x3D4, 0x0E);
+    __asm_outb(0x3D5, (uint8_t)((pos >> 8) & 0xFF));
+}
+
 void sys_screen_enter_status_mode() {
     _old_cursorx = _cursorx;
     _old_cursory = _cursory;
@@ -66,4 +81,5 @@ void sys_screen_enter_status_mode() {
 void sys_screen_exit_status_mode() {
     _cursorx = _old_cursorx;
     _cursory = _old_cursory;
+    sys_move_hw_cursor(_cursorx, _cursory);
 }

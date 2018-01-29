@@ -1,6 +1,8 @@
 #ifndef __JOS_KSCREEN_H__
 #define __JOS_KSCREEN_H__
 
+#include <arch.h>
+
 #ifdef i386
 #define VMEM (0xB8000)
 #define VMEM_MAX (0xB8F9E)
@@ -19,6 +21,8 @@ int *sys_get_cursorx_addr();
 int *sys_get_cursory_addr();
 void sys_scroll_term();
 int sys_cursor_overflow(int);
+void sys_init_hw_cursor();
+void sys_move_hw_cursor(uint16_t, uint16_t);
 /*void ksetcursor( int, int );
 int *kgetcursor();*/
 

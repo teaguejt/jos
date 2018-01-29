@@ -19,11 +19,10 @@ void get_mem_info() {
     int i, j, count;
     uint32_t base;
     uint32_t sz;
-    void *addr, *addr2;
+    void *addr;
     e820_info *info;
     pgd_t *kpgd;
     pgt_t *pgt;
-    pte_t pte;
 
     base = 0x2000;
     sz   = 0x18;

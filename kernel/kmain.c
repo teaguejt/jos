@@ -57,6 +57,7 @@ void __update_status_bar() {
 
 void kmain() {
     int i;
+    sys_init_hw_cursor();
     sys_set_cursorx(0);
     sys_set_cursory(7);
     kprintf("Welcome to");
