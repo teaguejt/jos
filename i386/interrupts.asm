@@ -12,7 +12,7 @@ isr_common_stub:
     mov es, ax
     mov fs, ax
     mov gs, ax
-    push esp    
+    push esp
     ; 2. Call C handler
     cld
     call isr_handler

@@ -86,7 +86,6 @@ void isr_install() {
     set_idt_gate(45, (uint32_t)irq13);
     set_idt_gate(46, (uint32_t)irq14);
     set_idt_gate(47, (uint32_t)irq15);
-
     set_idt(); // Load with ASM
     __asm__ __volatile__ ("sti");
 }
@@ -131,7 +130,7 @@ char *exception_messages[] = {
 };
 
 void isr_handler(registers_t *r) {
-    kprintf("received interrupt: %d\n", (int)r->int_no);
+    kprintf("received software interrupt: %d\n", (int)r->int_no);
     kprintf("%s\n", exception_messages[r->int_no]);
     kprintf("code: %d\n", (int)r->err_code);
 }

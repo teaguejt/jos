@@ -1,9 +1,10 @@
 OUTPUT_FORMAT("binary")
 ENTRY(kmain)
 phys = 0x100000;
+virt = 0xC0000000;
 SECTIONS
 {
-    .text phys : AT(phys) {
+    .text virt : AT(virt) {
         code = .;
         *(.text)
         *(.rodata*)

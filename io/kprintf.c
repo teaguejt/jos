@@ -171,6 +171,7 @@ void kputc( int xpos, int ypos, char c ) {
 
 int kprint_int( int xpos, int ypos, int i ) {
     int len = 0;
+    int first_found = 0;
     int it;
 
     if( i < 0 ) {
@@ -181,7 +182,10 @@ int kprint_int( int xpos, int ypos, int i ) {
     }
 
     for( it = 1000000000; it > 0; it /= 10 ) {
-        if( i / it != 0 || it == 1 ) {
+        if( first_found == 0 && i / it == 0 && it != 1)
+            continue;
+        else {
+            first_found = 1;
             kputc( xpos, ypos, i / it + '0' );
             ++xpos;
             ++len;

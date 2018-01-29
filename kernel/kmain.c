@@ -6,14 +6,14 @@
 #include "interrupts.h"
 #include "../io/kprintf.h"
 #include "../screen/kscreen.h"
-#include <paging.h>
-
+#include <meminfo.h>
 
 const char *welcome = "Hello from C code!";
 static struct cpu_info cpu_info;
+static struct uptime_struct uptime;
 
 /* Control variables */
-int shouldReact = 0;
+int should_react = 0;
 
 uint32_t __asm_test(uint32_t);
 
@@ -21,7 +21,64 @@ void dummy(int x, int y, int z) {
     kprintf("stack test: %d %d %d\n", x, y, z);
 }
 
+void __update_status_bar() {
+    int i;
+    int mode = 0x1E;
+    sys_screen_enter_status_mode();
+    for(i = 0; i < 80; i++)
+        kcprintf(mode, " ");
+    sys_set_cursorx(35);
+    kcprintf(mode, "VoidStar");
+
+    sys_set_cursorx(69);
+    /* printf field lengths should come next! */
+    if(uptime.days < 10)
+        kcprintf(mode, "0%d:", uptime.days);
+    else
+        kcprintf(mode, "%d:", uptime.days);
+    
+    if(uptime.hours < 10)
+        kcprintf(mode, "0%d:", uptime.hours);
+    else
+        kcprintf(mode, "%d:", uptime.hours);
+
+    if(uptime.minutes < 10)
+        kcprintf(mode, "0%d:", uptime.minutes);
+    else
+        kcprintf(mode, "%d:", uptime.minutes);
+
+    if(uptime.seconds < 10)
+        kcprintf(mode, "0%d", uptime.seconds);
+    else
+        kcprintf(mode, "%d", uptime.seconds);
+
+    sys_screen_exit_status_mode();
+}
+
 void kmain() {
+    int i;
+    sys_set_cursorx(0);
+    sys_set_cursory(7);
+    kprintf("Welcome to");
+    kcprintf(0x17, " VoidStar \n");
+    isr_install();
+    kprintf("sizeof long: %d\n", (int)sizeof(long));
+    get_mem_info();
+    init_uptime_struct(&uptime);
+    timer_init(1193);
+    __update_status_bar();
+    while(1) {
+        if(should_react) {
+            uptime.cseconds++;
+            if(uptime.cseconds == 100) {
+                uptime.cseconds = 0;
+                uptime_inc_second(&uptime);
+                __update_status_bar();
+            }
+            should_react = 0;
+        }
+    }
+#if 0
     int i;
     /*char * c;*/
     unsigned short pos = 1920;
@@ -31,8 +88,6 @@ void kmain() {
     struct registers registers;
 
     isr_install();
-    sys_set_cursorx(0);
-    sys_set_cursory(5);
     /*kcprintf( 0xF4, welcome );
     kcprintf( 0x0F, "\nNEW LINE TEST\n" );
     kprintf( "%d Zero int test\n", 0 );
@@ -91,4 +146,5 @@ void kmain() {
     __asm__ __volatile__ ("int $2");
     __asm__ __volatile__ ("int $3");
     while(1) ;
+#endif
 }

@@ -47,7 +47,7 @@ debug: jos.bin kernel.elf
 	qemu-system-i386 -s -fda jos.bin &
 	i386-elf-gdb -ex "target remote localhost:1234" -ex "symbol-file kernel.elf"
 
-kernel.elf: boot2.o ${OBJ} ${ASM_ELF}
+kernel.elf: boot3.o ${OBJ} ${ASM_ELF}
 	i386-elf-ld -o $@  $^ -Ttext 0x100000
 
 clean:

@@ -19,7 +19,7 @@ struct idt_reg {
 } __attribute__ ((packed));
 
 #define IDT_ENTRIES 256
-struct idt_entry idt[256];
+struct idt_entry idt[IDT_ENTRIES];
 struct idt_reg idtr;
 
 struct idt_entry *__get_idt();

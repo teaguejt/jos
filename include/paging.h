@@ -19,7 +19,5 @@ typedef struct {
     uint32_t pgt_t[1024];
 } pgd_t;
 
-/* kernel's master page directory */
-extern uint32_t k_pgd[1024] __attribute__((aligned(4096)));
 #endif /* i386 */
 #endif

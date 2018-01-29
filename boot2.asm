@@ -52,10 +52,6 @@ get_smap_loop:
     jmp get_smap_loop
 get_smap_out:
     ; Fill in the size and entry number
-    ; Yup, my segment trickery is stupid
-    ; I need to find a way around this direct addressing,
-    ; but without malloc or a real kernel I'm out of
-    ; ideas
     mov ax, [smaps_entries]
     mov bx, 0x2400
     mov [bx], ax
@@ -209,51 +205,126 @@ prot_init:
 call print_nl32
 mov ebx, findpgs
 call print_str32
-call find_free_page
+
+;Since we have a guaranteed 30k free starting at
+; 0x500, we're just gonna plop our first two pages
+; down at 0x3000 (so we clear the memory map).
+; 0x3000 = kernel's PGD
+; 0x4000 = identity mapped stuff
+; 0x5000 = the actual kernel
+mov eax, 0x3000
+mov [kernel_pgd], eax
+mov eax, 0x4000
+mov [kernel_pgt_1mb], eax
+mov eax, 0x5000
+mov [kernel_pgt_kern], eax
+mov eax, [kernel_pgd]
+mov ebx, [kernel_pgt_1mb]
+mov ecx, [kernel_pgt_kern]
+
+; Start populating the page table. The first two pages
+; are INVALID
+; Create the PGD entry
+
+; Store the first mb page table in the first pgd entry
+mov eax, [kernel_pgt_1mb]
+mov ebx, [kernel_pgd]
+or eax, 0x1
+or eax, 0x2
+or eax, 0x4
+or eax, 0x8
+or eax, 0x20
+mov [ebx], eax
+
+; Store the kernel's pgt in the 768th (3GB) pgd entry
+mov eax, [kernel_pgt_kern]
+mov ebx, [kernel_pgd]
+mov ecx, 0x300
+imul ecx, 0x4
+add ebx, ecx
+or eax, 0x1
+or eax, 0x2
+or eax, 0x4
+or eax, 0x8
+or eax, 0x20
+mov [ebx], eax
 
 
-; Start setting up paging. First, find a free page above
-; 0x10000 for the kernel pgd
-find_free_page:
-    pusha
-    mov ebx, 0x2400         ; starting addr of e820 map
-    mov eax, [ebx]          ; how many records to check
-find_free_page_loop:
-    cmp eax, 0x0
-    jz find_free_page_err
-    sub eax, 1
-    push eax
-    mov ebx, 0x2200
-    mov eax, [ebx]
-    mov ecx, [ebx + 20]
-    jmp $
-    popa
-    ret
-find_free_page_err:
-    mov ebx, error
-    call print_str32
-    jmp $
+; Identity map the first megabyte (256 entries)
+; This way video memory, BDA, and initial paging structures have 1:1
+; physical:virtual mapping and we don't have to worry about anything
+; getting "lost"
+mov ebx, [kernel_pgt_1mb]
+mov eax, 0x0000         ; The zero page
+mov ecx, 0x0
+ident_map_loop:
+    or eax, 0x1             ; Page is present (duh)
+    or eax, 0x2             ; Page is read/write
+    or eax, 0x4             ; Page is supervisor-only
+    or eax, 0x8             ; Use write-through caching for page tables
+    ; or eax, 0x10          ; We want to cache these
+    or eax, 0x20            ; Page has been accessed
+    ; or eax, 0x40          ; 4k pages
+    mov [ebx], eax
+    add ebx, 0x4            ; Next entry in page table
+    add eax, 0x1000         ; Next page phys. addr.
+    add ecx, 0x1            ; Increment count
+    cmp ecx, 0x100          ; Have we filled in 256 entries?
+    jnz ident_map_loop
 
-PROT_BEGIN:
+; Map the kernel's starting address to 3GB. Higher half is best half
+; Current number crunching suggests that the kernel itself is ~4
+; pages, so map that number for now.
+; Why is it called "higher half?" In 32-bit, it really should be
+; "Highest quarter."
+mov eax, 0x100000
+mov ebx, [kernel_pgt_kern]
+mov ecx, 0x0
+kern_map_loop:
+    or eax, 0x1             ; Page is present (duh)
+    or eax, 0x2             ; Page is read/write
+    ; or eax, 0x04          ; Page is supervisor-only
+    or eax, 0x8             ; Use write-through caching for page tables
+    ; or eax, 0x10          ; We want to cache these
+    or eax, 0x20            ; Page has been accessed
+    ; or eax, 0x40          ; 4k pages
+    mov [ebx], eax
+    add ebx, 0x4            ; Next entry in page table
+    add eax, 0x1000         ; Next page phys. addr.
+    add ecx, 0x1            ; Increment count
+    cmp ecx, 0x5            ; Have we filled in 4 entries?
+    jnz kern_map_loop
+    
+KERN_BEGIN:
+    ; Move kernel to phys. 0x100000
     mov esi, 0x8400
     mov edi, 0x100000
-    mov ecx, 0x1800
+    mov ecx, 0x5000
     rep movsw
-    jmp $
-    jmp 0x100000
+    ; Enable paging
+    mov eax, [kernel_pgd]   ; Already 12-bit aligned :-)
+    mov cr3, eax
+    mov eax, cr0
+    or eax, 0x80000001
+    mov cr0, eax
+    mov ebx, success
+    call print_str32
+    ; Jump to the kernel!
+    jmp 0xC0000000
 
 [bits 16]
 error db "Failed.", 0
 success db "Bueno.", 0
 getmm db "Getting memory map... ", 0
 protsw db "Switching to protected mode... ", 0
-findpgs db "Finding space for kernel pg. structs... ", 0
+findpgs db "Enabling paging... ", 0
 
 cursorx db 0x0
 cursory db 0x0
 smaps_entries dw 0x0
 smaps_esize dw 0x0
 kernel_pgd dd 0x0
-kernel_pte dd 0x0
+kernel_pgt_1mb dd 0x0
+kernel_pgt_kern dd 0x0
 
 times 1024 - ($ - $$) db 0

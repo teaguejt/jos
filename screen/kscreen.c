@@ -3,6 +3,7 @@
 static int _cursorx = 0;
 static int _cursory = 0;
 static int _cursory_max = 23;
+static int _old_cursorx, _old_cursory;
 
 void sys_clear_screen() {    
     char *vmem = (char *)VMEM;
@@ -54,4 +55,15 @@ void sys_scroll_term() {
 
 int sys_cursor_overflow(int y) {
     return y == _cursory_max;
+}
+
+void sys_screen_enter_status_mode() {
+    _old_cursorx = _cursorx;
+    _old_cursory = _cursory;
+    _cursory = _cursory_max + 1;
+}
+
+void sys_screen_exit_status_mode() {
+    _cursorx = _old_cursorx;
+    _cursory = _old_cursory;
 }

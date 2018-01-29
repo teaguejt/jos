@@ -11,5 +11,7 @@ typedef int int32_t;
 
 #define LOW_16(addr)  ((uint16_t)(addr & 0xFFFF))
 #define HIGH_16(addr) ((uint16_t)((addr >> 16) & 0xFFFF))
+#define LOW_32(addr)  ((uint32_t)((addr >> 32) & 0xFFFFFFFF))
+#define HIGH_32(addr) ((uint32_t)(addr & 0xFFFFFFFF));
 
 #endif
