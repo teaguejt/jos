@@ -7,6 +7,7 @@
 #include "../io/kprintf.h"
 #include "../screen/kscreen.h"
 #include <meminfo.h>
+#include "../io/keyboard.h"
 
 const char *welcome = "Hello from C code!";
 static struct cpu_info cpu_info;
@@ -28,6 +29,7 @@ void __update_status_bar() {
     for(i = 0; i < 80; i++)
         kcprintf(mode, " ");
     sys_set_cursorx(35);
+    keyboard_init();
     kcprintf(mode, "VoidStar");
 
     sys_set_cursorx(69);
@@ -64,7 +66,47 @@ void kmain() {
     kcprintf(0x17, " VoidStar \n");
     isr_install();
     kprintf("sizeof long: %d\n", (int)sizeof(long));
-    get_mem_info();
+    //get_mem_info();
+    kprintf("strcmp test:\n");
+    if(strcmp("cat", "cat") == 0)
+        kprintf("cat == cat\n");
+    else
+        kcprintf(0x4f, "cat != cat\n");
+
+    if(strcmp("cat", "dog") == 0)
+        kcprintf(0x4f, "cat == dog\n");
+    else
+        kprintf("cat != dog\n");
+
+    if(strcmp("dog", "cat") == 0)
+        kcprintf(0x4f, "dog == cat\n");
+    else
+        kprintf("dog != cat\n");
+
+    if(strcmp("cat", "monkey") == 0)
+        kcprintf(0x4f, "cat == monkey\n");
+    else
+        kprintf("cat != monkey\n");
+
+    if(strcmp("monkey", "cat") == 0)
+        kcprintf(0x4f, "monkey == cat\n");
+    else
+        kprintf("monkey != cat\n");
+
+    if(strcmp("cat", "catastrophe") == 0)
+        kcprintf(0x4f, "cat == catastrophe\n");
+    else
+        kprintf("cat != catastophe\n");
+
+    if(strcmp("catastrophe", "cat") == 0)
+        kcprintf(0x4f, "catastrophe == cat\n");
+    else
+        kprintf("catastrophe != cat\n");
+
+    if(strcmp("catastrophe", "catastrophe") == 0)
+        kprintf("catastrophe == catastrophe\n");
+    else
+        kcprintf(0x4f, "catastrophe != catastrophe\n");
     init_uptime_struct(&uptime);
     timer_init(1193);
     __update_status_bar();
