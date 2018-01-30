@@ -29,7 +29,6 @@ void __update_status_bar() {
     for(i = 0; i < 80; i++)
         kcprintf(mode, " ");
     sys_set_cursorx(35);
-    keyboard_init();
     kcprintf(mode, "VoidStar");
 
     sys_set_cursorx(69);
@@ -54,6 +53,10 @@ void __update_status_bar() {
     else
         kcprintf(mode, "%d", uptime.seconds);
 
+    sys_set_cursorx(0);
+    kcprintf(mode, "-> ");
+    kcprintf(mode, shell_buf);
+
     sys_screen_exit_status_mode();
 }
 
@@ -63,61 +66,23 @@ void kmain() {
     sys_set_cursorx(0);
     sys_set_cursory(7);
     kprintf("Welcome to");
-    kcprintf(0x17, " VoidStar \n");
+    kcprintf(0x1E, " VoidStar \n");
     isr_install();
     kprintf("sizeof long: %d\n", (int)sizeof(long));
+    kprintf("kernel shell buf = 0x%lx\n", shell_buf);
     //get_mem_info();
-    kprintf("strcmp test:\n");
-    if(strcmp("cat", "cat") == 0)
-        kprintf("cat == cat\n");
-    else
-        kcprintf(0x4f, "cat != cat\n");
-
-    if(strcmp("cat", "dog") == 0)
-        kcprintf(0x4f, "cat == dog\n");
-    else
-        kprintf("cat != dog\n");
-
-    if(strcmp("dog", "cat") == 0)
-        kcprintf(0x4f, "dog == cat\n");
-    else
-        kprintf("dog != cat\n");
-
-    if(strcmp("cat", "monkey") == 0)
-        kcprintf(0x4f, "cat == monkey\n");
-    else
-        kprintf("cat != monkey\n");
-
-    if(strcmp("monkey", "cat") == 0)
-        kcprintf(0x4f, "monkey == cat\n");
-    else
-        kprintf("monkey != cat\n");
-
-    if(strcmp("cat", "catastrophe") == 0)
-        kcprintf(0x4f, "cat == catastrophe\n");
-    else
-        kprintf("cat != catastophe\n");
-
-    if(strcmp("catastrophe", "cat") == 0)
-        kcprintf(0x4f, "catastrophe == cat\n");
-    else
-        kprintf("catastrophe != cat\n");
-
-    if(strcmp("catastrophe", "catastrophe") == 0)
-        kprintf("catastrophe == catastrophe\n");
-    else
-        kcprintf(0x4f, "catastrophe != catastrophe\n");
     init_uptime_struct(&uptime);
     timer_init(1193);
     __update_status_bar();
+    keyboard_init();
     while(1) {
         if(should_react) {
             uptime.cseconds++;
             if(uptime.cseconds == 100) {
                 uptime.cseconds = 0;
                 uptime_inc_second(&uptime);
-                __update_status_bar();
             }
+            __update_status_bar();
             should_react = 0;
         }
     }

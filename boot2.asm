@@ -292,14 +292,14 @@ kern_map_loop:
     add ebx, 0x4            ; Next entry in page table
     add eax, 0x1000         ; Next page phys. addr.
     add ecx, 0x1            ; Increment count
-    cmp ecx, 0x5            ; Have we filled in 4 entries?
+    cmp ecx, 0x6            ; Have we filled in 4 entries?
     jnz kern_map_loop
     
 KERN_BEGIN:
     ; Move kernel to phys. 0x100000
     mov esi, 0x8400
     mov edi, 0x100000
-    mov ecx, 0x5000
+    mov ecx, 0x10000
     rep movsw
     ; Enable paging
     mov eax, [kernel_pgd]   ; Already 12-bit aligned :-)
