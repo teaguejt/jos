@@ -22,14 +22,58 @@ void dummy(int x, int y, int z) {
     kprintf("stack test: %d %d %d\n", x, y, z);
 }
 
+/* Read the BIOS data area and display its output information */
+void get_bda_info() {
+    /* Memory addresses are usually 32-bits, but this is in very
+       low memory and consists of 16-bit entries, so we're going to
+       fudge the numbers a bit. */
+    uint16_t *bda_addr;
+    struct bda_info bda_info;
+    int i;
+
+    bda_addr = (uint16_t *)__INIT_BDA;
+    for(i = 0; i < 4; i++) {
+        bda_info.com_ports[i] = *bda_addr++;
+        kprintf("com port %d: 0x%x\n", i, (int)bda_info.com_ports[i]);
+    }
+    bda_addr = (uint16_t *)(0x44A);
+    bda_info.display_cols = *bda_addr;
+    kprintf("detected text mode cols: %d\n", (int)bda_info.display_cols);
+    bda_addr = (uint16_t *)(0x463);
+    bda_info.vid_port = *bda_addr;
+    kprintf("display port: 0x%x\n", (int)bda_info.vid_port);
+}
+
+void get_cpu_info() {
+    struct cpu_info cpu_info;
+    get_cpu_data(&cpu_info);
+    kprintf("Max cpuid eax value = 0x%x\n", cpu_info.max_capabilities);
+    kprintf("IDT array located at 0x%x\n", __get_idt());
+    kprintf("int size = %d\n", sizeof(int));
+    kprintf("CPU vendor: %s\n", cpu_info.vendor_string);
+    kprintf("CPU brand string: %s at 0x%x\n", cpu_info.brand_string, &cpu_info);
+}
+
+void help() {
+    kcprintf(0x1E, " VOIDSTAR ");
+    kprintf(" Help\n\n");
+    kprintf("This is an early version. Nothing is fully implemented.\n");
+    kprintf("\"Shell\" commands:\n");
+    kprintf("CLR:  clear the screen\n");
+    kprintf("BDA:  display BIOS Data Area information\n");
+    kprintf("CPU:  display CPU information\n");
+    kprintf("MEM:  display E820 map and memory usage information.\n");
+    kprintf("HELP: display this.\n");
+}
+
 void __update_status_bar() {
     int i;
     int mode = 0x1E;
     sys_screen_enter_status_mode();
     for(i = 0; i < 80; i++)
         kcprintf(mode, " ");
-    sys_set_cursorx(35);
-    kcprintf(mode, "VoidStar");
+    sys_set_cursorx(33);
+    kcprintf(mode, "| VoidStar |");
 
     sys_set_cursorx(69);
     /* printf field lengths should come next! */
@@ -68,8 +112,6 @@ void kmain() {
     kprintf("Welcome to");
     kcprintf(0x1E, " VoidStar \n");
     isr_install();
-    kprintf("sizeof long: %d\n", (int)sizeof(long));
-    kprintf("kernel shell buf = 0x%lx\n", shell_buf);
     //get_mem_info();
     init_uptime_struct(&uptime);
     timer_init(1193);
@@ -81,6 +123,25 @@ void kmain() {
             if(uptime.cseconds == 100) {
                 uptime.cseconds = 0;
                 uptime_inc_second(&uptime);
+            }
+            if(pending_cmd == 1) {
+                kprintf("\n\n");
+                if(strcmp(shell_buf, "MEM") == 0)
+                    get_mem_info();
+                else if(strcmp(shell_buf, "CPU") == 0)
+                    get_cpu_info();
+                else if(strcmp(shell_buf, "CLR") == 0)
+                    sys_clear_screen();
+                else if(strcmp(shell_buf, "BDA") == 0)
+                    get_bda_info();
+                else if(strcmp(shell_buf, "HELP") == 0)
+                    help();
+                else
+                    kprintf("Invalid command: %s\n", shell_buf);
+                pending_cmd = 0;
+                for(i = 0; i < 32; i++) {
+                    shell_buf[i] = '\0';
+                }
             }
             __update_status_bar();
             should_react = 0;
@@ -96,7 +157,7 @@ void kmain() {
     struct registers registers;
 
     isr_install();
-    /*kcprintf( 0xF4, welcome );
+    /*kcprintf( 0xF4, welcome );*/
     kcprintf( 0x0F, "\nNEW LINE TEST\n" );
     kprintf( "%d Zero int test\n", 0 );
     kprintf( "%d Non-zero int test\n", 5 );
@@ -108,44 +169,6 @@ void kmain() {
     kcprintf( 0xF4, "%d %x Attributed test\n", 500, 128 );
     kprintf("testing printing func retvals and var addresses:\n");
     kprintf("cursor: %d, %d\n", sys_get_cursorx(), sys_get_cursory());
-    dummy(1, 2, 3);
-    c = (char *)VMEM_LAST_LINE;
-    *c++ = 'J';
-    *c++ = 0xF;*/
-    kprintf("welcome string (rodata) addr = 0x%x\n", welcome);   
-    kprintf("jOS System Summary from BDA:\n");
-    kprintf("============================\n");
-    kprintf("cursor: %x, %x\n", sys_get_cursorx_addr(), sys_get_cursory_addr());
-    /* Read the BIOS data area */
-    bda_tmp = (uint16_t *)__INIT_BDA;
-    for(i = 0; i < 4; i++) {
-        bda_info.com_ports[i] = *bda_tmp++;
-        kprintf("com port %d: 0x%x\n", i, (int)bda_info.com_ports[i]);
-    }
-    bda_tmp = (uint16_t *)(0x44A);
-    bda_info.display_cols = *bda_tmp;
-    kprintf("detected text mode cols: %d\n", (int)bda_info.display_cols);
-    bda_tmp = (uint16_t *)(0x463);
-    bda_info.vid_port = *bda_tmp;
-    kprintf("display port: 0x%x\n", (int)bda_info.vid_port);
-    tmp = __asm_test(0xbeef);
-    kprintf("0x%x\n", tmp);
-    __asm_getreg(&registers); 
-    kprintf("eax: 0x%x     ", registers.eax);
-    kprintf("ebx: 0x%x\n", registers.ebx);
-    kprintf("ecx: 0x%x     ", registers.ecx);
-    kprintf("edx: 0x%x\n", registers.edx);
-    kprintf("esp: 0x%x\n", registers.esp);
-    __asm_outb(0x3D4, 0x0F);
-    __asm_outb(0x3D5, (unsigned char)(pos & 0xFF));
-    __asm_outb(0x3D4, 0x0E);
-    __asm_outb(0x3D5, (unsigned char)((pos >> 8) & 0xFF));
-    get_cpu_data(&cpu_info);
-    kprintf("Max cpuid eax value = 0x%x\n", cpu_info.max_capabilities);
-    //kprintf("IDT array located at 0x%x\n", __get_idt());
-    kprintf("int size = %d\n", sizeof(int));
-    kprintf("CPU vendor: %s\n", cpu_info.vendor_string);
-    kprintf("CPU brand string: %s at 0x%x\n", cpu_info.brand_string, &cpu_info);
     kprintf("location of isr3: 0x%x\n", isr3);
     kprintf("location of timer_init: 0x%x\n", timer_init);
     kprintf("location of kernel pgd: 0x%lx\n", &k_pgd);

@@ -4,7 +4,6 @@
 
 #ifdef i386
 
-
 static int mem_regions;
 static char *region_types[3] = {"UNDEF", "AVAIL", "RSRVD"};
 static char *dir_modes[2]    = {"RO", "RW"};
@@ -17,6 +16,8 @@ void get_mem_regions() {
 
 void get_mem_info() {
     int i, j, count;
+    unsigned int tot = 0;
+    unsigned int tot_pages = 0;
     uint32_t base;
     uint32_t sz;
     void *addr;
@@ -41,7 +42,10 @@ void get_mem_info() {
         if(info->type > 2)  info->type = 0;
         kprintf("%s\n", region_types[info->type]);
         addr += sz;
+        if(info->type == 1)
+            tot += (info->size_low - info->base_low);
     }
+    kprintf("Total system memory: 0x%lx bytes\n", tot);
     
     kprintf("\npgd info:\n");
     kpgd = (pgd_t *)0x3000;

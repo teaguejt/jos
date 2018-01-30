@@ -81,5 +81,4 @@ void sys_screen_enter_status_mode() {
 void sys_screen_exit_status_mode() {
     _cursorx = _old_cursorx;
     _cursory = _old_cursory;
-    sys_move_hw_cursor(_cursorx, _cursory);
 }

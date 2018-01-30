@@ -20,19 +20,18 @@ static char __kbd_sc_ascii[] = {'?', '?', '1', '2', '3', '4', '5', '6', '7',
     'O', 'P', '[', ']', '?', '?', 'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L',
     ';', '\'', '`', '?', '\\', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', ',', '.'};
 
-char shell_buf[64];
+char shell_buf[32];
+int pending_cmd = 0;
 static int buf_len = 0;
 
 static void keyboard(registers_t t) {
     uint8_t scancode;
 
     scancode = __asm_inb(0x60);
-    if(scancode > SCAN_MAX) return;
+    if(scancode > SCAN_MAX)     return;
+    else if(pending_cmd == 1)   return;
     else if(scancode == ENTER) {
-        shell_buf[0] = '\0';
-        for(buf_len = 0; buf_len < 64; buf_len++) {
-            shell_buf[buf_len] = '\0';
-        }
+        pending_cmd = 1;
         buf_len = 0;
     }
     else if(scancode == BACKSPACE) {
@@ -41,7 +40,7 @@ static void keyboard(registers_t t) {
         shell_buf[buf_len] = '\0';
     }
     else {
-        if(buf_len == 63) return;
+        if(buf_len == 15) return;
         shell_buf[buf_len] = __kbd_sc_ascii[scancode];
         ++buf_len;
     }
