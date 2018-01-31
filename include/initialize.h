@@ -2,6 +2,9 @@
  * Contains constants and function prototypes needed to boot the system
  * and get memory maps, read from the BDA, etc. */
 
+#ifndef __JOS_INITIALIZE_H__
+#define __JOS_INITIALIZE_H__
+
 #define __INIT_BDA  0x0400      /* Memory address of BIOS data area */
 
 /* A struct containing the information from the BDA */
@@ -21,3 +24,5 @@ struct bda_info {
     unsigned short kbd_buf_end;
     unsigned char  kbd_state;
 };
+
+#endif

@@ -130,9 +130,17 @@ char *exception_messages[] = {
 };
 
 void isr_handler(registers_t *r) {
-    kprintf("received software interrupt: %d\n", (int)r->int_no);
-    kprintf("%s\n", exception_messages[r->int_no]);
-    kprintf("code: %d\n", (int)r->err_code);
+    if(r->int_no >= 40) __asm_outb(0xA0, 0x20);
+    __asm_outb(0x20, 0x20);
+
+    if(isr_handlers[r->int_no] != 0) {
+        isr_t handler = isr_handlers[r->int_no];
+        handler(r);
+    }
+    else {
+        kprintf("received unwritten interrupt!\n");
+    }
+        
 }
 
 void register_interrupt_handler(uint8_t n, isr_t handler) {

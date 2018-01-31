@@ -1,12 +1,23 @@
 #ifndef __JOS_MM_H__
 #define __JOS_MM_H__
 
+#include <kernel.h>
+#include <ktypes.h>
+#include <interrupts.h>
+#include <arch.h>
+#include <cpu.h>
+
 #ifdef i386
 
 #define PAGE_SIZE   4096
 #define OFFSET_BITS 12
 #define TBL_ENTRIES 1024
 #define ENTRY_SIZE  4
+
+/* Hard-coded addresses for the kernel's reserved memory structures. */
+#define KERN_PGD    0x3000
+#define LOW_PGT     0x4000
+#define KERN_PGT    0x5000
 
 /* A page directory table. It's pretty much an array
    of unsigned integers */
@@ -52,5 +63,14 @@ typedef struct {
 #define ENT_PADDR(ent) \
     ((uint32_t)ent & 0xFFFFF000)
 
-#endif
+/* Kernel memory structures for management */
+typedef struct {
+    uint32_t base;  // Starting address of memory region
+    uint32_t limit; // Last page of memory region
+    uint32_t ptr;   // Current position of usage within region
+} phys_mem_region;
+
+void init_paging();
+
+#endif /* i386 */
 #endif

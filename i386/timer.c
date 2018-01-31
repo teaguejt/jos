@@ -32,6 +32,7 @@ void uptime_inc_second(struct uptime_struct *uptime) {
 
 /* The actual timer interrupt function */
 static void timer(registers_t t) {
+    UNUSED(t);
     ++ticks;
     if(ticks % 10 == 0) {
         should_react = 1;
@@ -46,7 +47,7 @@ void timer_init(uint32_t frequency) {
     uint32_t div  = 1193180 / frequency;
     uint8_t  low  = (uint8_t)(div & 0xFF);
     uint8_t  high = (uint8_t)((div >> 8) & 0xFF);
-    register_interrupt_handler(IRQ0, &timer);
+    register_interrupt_handler(IRQ0, (isr_t)&timer);
 
     __asm_outb(0x43, 0x36);
     __asm_outb(0x40, low);

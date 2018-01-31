@@ -8,6 +8,7 @@
 #include "../screen/kscreen.h"
 #include <meminfo.h>
 #include "../io/keyboard.h"
+#include <mm.h>
 
 const char *welcome = "Hello from C code!";
 static struct cpu_info cpu_info;
@@ -117,6 +118,8 @@ void kmain() {
     timer_init(1193);
     __update_status_bar();
     keyboard_init();
+    init_paging();
+    *(int *)0xC5000000 = 50;
     while(1) {
         if(should_react) {
             uptime.cseconds++;

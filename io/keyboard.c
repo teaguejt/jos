@@ -25,6 +25,7 @@ int pending_cmd = 0;
 static int buf_len = 0;
 
 static void keyboard(registers_t t) {
+    UNUSED(t);
     uint8_t scancode;
 
     scancode = __asm_inb(0x60);
@@ -110,5 +111,5 @@ void keyboard_init() {
     set = get_scancode_set();
     kprintf("keyboard initialized: scancode set = 0x%lx\n", set);
     kprintf("shell buffer = 0x%lx\n", shell_buf);
-    register_interrupt_handler(IRQ1, &keyboard);
+    register_interrupt_handler(IRQ1, (isr_t)&keyboard);
 }

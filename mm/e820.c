@@ -17,7 +17,6 @@ void get_mem_regions() {
 void get_mem_info() {
     int i, j, count;
     unsigned int tot = 0;
-    unsigned int tot_pages = 0;
     uint32_t base;
     uint32_t sz;
     void *addr;
