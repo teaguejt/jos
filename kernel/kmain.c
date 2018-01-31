@@ -119,7 +119,7 @@ void kmain() {
     __update_status_bar();
     keyboard_init();
     init_paging();
-    *(int *)0xC5000000 = 50;
+    //*(int *)0xC5000000 = 50;
     while(1) {
         if(should_react) {
             uptime.cseconds++;

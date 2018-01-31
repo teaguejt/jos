@@ -57,6 +57,7 @@ static int get_scancode_set() {
     /* Output to the keyboard requesting scancode set */
     do {
         /* Read input. Wait for ack (0xFA) or resent (0xFE) */
+        kprintf("1\n");
         res = __asm_inb(0x60);
         if(res == 0xFA)
             break;
@@ -68,6 +69,7 @@ static int get_scancode_set() {
     res = 0;
     __asm_outb(0x60, 0x2);
     do {
+        kprintf("2\n");
         res = __asm_inb(0x60);
         if(res == 0xFA)
             break;
@@ -78,7 +80,7 @@ static int get_scancode_set() {
     
     /* Output to the keyboard requesting scancode set */
     do {
-        /* Read input. Wait for ack (0xFA) or resent (0xFE) */
+        /* Read input. Wait for ack (0xFA) or resend (0xFE) */
         res = __asm_inb(0x60);
         if(res == 0xFA)
             break;
@@ -91,10 +93,10 @@ static int get_scancode_set() {
     __asm_outb(0x60, prm);
     do {
         res = __asm_inb(0x60);
-        if(res == 0xFA)
-            break;
-        else if(res == 0xFE)
+        if(res == 0xFE)
             __asm_outb(0x60, cmd);
+        else
+            break;
     } while(1);
 
     /* Received ack, now wait for scancode set identifer. */
