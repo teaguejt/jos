@@ -4,6 +4,7 @@ global __asm_outd
 global __asm_inb
 global __asm_inw
 global __asm_ind
+global __asm_get_cr2
 
 __asm_outb:
     push ebp
@@ -82,6 +83,18 @@ __asm_ind:
     xor edx, edx
     mov dx, [ebp + 8]
     in eax, dx
+    pop edx
+    pop ebp
+    ret
+
+__asm_get_cr2:
+    push ebp
+    mov ebp, esp
+    push edx
+    xor eax, eax
+    xor edx, edx
+    mov dx, [ebp + 8]
+    mov eax, cr2
     pop edx
     pop ebp
     ret

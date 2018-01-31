@@ -20,6 +20,7 @@ void __asm_outd(uint16_t port, uint32_t value);
 uint8_t __asm_inb(uint16_t port);
 uint16_t __asm_inw(uint16_t port);
 uint32_t __asm_ind(uint16_t port);
+uint32_t __asm_get_cr2();
 
 /* x86 cpuid functions */
 uint32_t __asm_getcpumaxid(void);
