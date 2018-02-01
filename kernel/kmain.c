@@ -10,7 +10,10 @@
 #include "../io/keyboard.h"
 #include <mm.h>
 
-const char *welcome = "Hello from C code!";
+#ifdef i386
+#include <bda.h>
+#endif
+
 static struct cpu_info cpu_info;
 static struct uptime_struct uptime;
 
@@ -21,28 +24,6 @@ uint32_t __asm_test(uint32_t);
 
 void dummy(int x, int y, int z) {
     kprintf("stack test: %d %d %d\n", x, y, z);
-}
-
-/* Read the BIOS data area and display its output information */
-void get_bda_info() {
-    /* Memory addresses are usually 32-bits, but this is in very
-       low memory and consists of 16-bit entries, so we're going to
-       fudge the numbers a bit. */
-    uint16_t *bda_addr;
-    struct bda_info bda_info;
-    int i;
-
-    bda_addr = (uint16_t *)__INIT_BDA;
-    for(i = 0; i < 4; i++) {
-        bda_info.com_ports[i] = *bda_addr++;
-        kprintf("com port %d: 0x%x\n", i, (int)bda_info.com_ports[i]);
-    }
-    bda_addr = (uint16_t *)(0x44A);
-    bda_info.display_cols = *bda_addr;
-    kprintf("detected text mode cols: %d\n", (int)bda_info.display_cols);
-    bda_addr = (uint16_t *)(0x463);
-    bda_info.vid_port = *bda_addr;
-    kprintf("display port: 0x%x\n", (int)bda_info.vid_port);
 }
 
 void get_cpu_info() {
@@ -119,7 +100,8 @@ void kmain() {
     __update_status_bar();
     keyboard_init();
     init_paging();
-    *(int *)0xC5000000 = 50;
+    populate_bda_struct();
+    //*(int *)0xC5000000 = 50;
     while(1) {
         if(should_react) {
             uptime.cseconds++;
@@ -136,7 +118,7 @@ void kmain() {
                 else if(strcmp(shell_buf, "CLR") == 0)
                     sys_clear_screen();
                 else if(strcmp(shell_buf, "BDA") == 0)
-                    get_bda_info();
+                    display_bda_info();
                 else if(strcmp(shell_buf, "HELP") == 0)
                     help();
                 else
