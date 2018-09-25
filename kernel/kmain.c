@@ -136,7 +136,7 @@ void kmain() {
             __update_status_bar();
             should_react = 0;
             /* Induce a page fault */
-            kprintf("0x%lx\n", *(unsigned long *)0xD0000000);
+            //kprintf("0x%lx\n", *(unsigned long *)0xD0000000);
         }
     }
 #if 0
