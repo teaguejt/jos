@@ -9,6 +9,7 @@
 #include <meminfo.h>
 #include "../io/keyboard.h"
 #include <mm.h>
+#include <list.h>
 
 #ifdef i386
 #include <bda.h>
@@ -29,11 +30,12 @@ void dummy(int x, int y, int z) {
 void get_cpu_info() {
     struct cpu_info cpu_info;
     get_cpu_data(&cpu_info);
+    kcprintf(0x1E, "Detected CPU Information:\n");
     kprintf("Max cpuid eax value = 0x%x\n", cpu_info.max_capabilities);
     kprintf("IDT array located at 0x%x\n", __get_idt());
     kprintf("int size = %d\n", sizeof(int));
     kprintf("CPU vendor: %s\n", cpu_info.vendor_string);
-    kprintf("CPU brand string: %s at 0x%x\n", cpu_info.brand_string, &cpu_info);
+    kprintf("CPU brand string: %s at 0x%x\n\n", cpu_info.brand_string, &cpu_info);
 }
 
 void help() {
@@ -119,6 +121,9 @@ void kmain() {
                     sys_clear_screen();
                 else if(strcmp(shell_buf, "BDA") == 0)
                     display_bda_info();
+                else if(strcmp(shell_buf, "LIST-TEST") == 0) {
+                    test_llist();
+                }
                 else if(strcmp(shell_buf, "HELP") == 0)
                     help();
                 else
@@ -130,6 +135,8 @@ void kmain() {
             }
             __update_status_bar();
             should_react = 0;
+            /* Induce a page fault */
+            kprintf("0x%lx\n", *(unsigned long *)0xD0000000);
         }
     }
 #if 0

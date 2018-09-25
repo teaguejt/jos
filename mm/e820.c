@@ -33,12 +33,12 @@ void get_mem_info() {
     }
 
     addr = (void *)base;
-    kprintf("e820 reporting %d memory regions:\n", mem_regions);
+    kcprintf(0x1E, "Detected %d Memory Regions in E820 Map:\n", mem_regions);
     for(i = 0; i < mem_regions; i++) {
         info = (e820_info *)addr;
         kprintf("region %d: ", i + 1);
         kprintf("0x%lx bytes at 0x%lx ", info->size_low, info->base_low);
-        if(info->type > 2)  info->type = 0;
+        if(info->type > 2 || info->type < 0)  info->type = 0;
         kprintf("%s\n", region_types[info->type]);
         addr += sz;
         if(info->type == 1)
@@ -80,6 +80,7 @@ void get_mem_info() {
             kprintf("\n");
         }
     }
+    kprintf("\n");
 }
 
 #endif /* i386 */

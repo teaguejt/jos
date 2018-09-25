@@ -292,9 +292,9 @@ kern_map_loop:
     add ebx, 0x4            ; Next entry in page table
     add eax, 0x1000         ; Next page phys. addr.
     add ecx, 0x1            ; Increment count
-    cmp ecx, 0x6            ; Have we filled in 4 entries?
+    cmp ecx, 0x6            ; Have we filled in 6 entries?
     jnz kern_map_loop
-    
+
 KERN_BEGIN:
     ; Move kernel to phys. 0x100000
     mov esi, 0x8400
